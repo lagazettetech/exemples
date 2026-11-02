@@ -1,0 +1,10 @@
+{
+  "name": "le-code-001-pagination-curseur",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Le Code #001 — pagination OFFSET vs curseur, testée sur PostgreSQL (PGlite)",
+  "scripts": { "test": "node test.mjs" },
+  "license": "MIT",
+  "dependencies": { "@electric-sql/pglite": "^0.3.0" }
+}

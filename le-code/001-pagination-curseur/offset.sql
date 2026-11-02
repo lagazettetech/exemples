@@ -1,0 +1,3 @@
+SELECT * FROM posts
+ORDER BY created_at DESC
+LIMIT 20 OFFSET $1;
