@@ -1,0 +1,10 @@
+input.oninput = () => {
+  clearTimeout(t);
+  t = setTimeout(go, 300);
+};
+async function go() {
+  ctrl?.abort();
+  ctrl = new AbortController();
+  try {
+    const r = await fetch(url(),
+      { signal: ctrl.signal });
