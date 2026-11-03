@@ -1,0 +1,10 @@
+// client : 1 clé par paiement
+const cle = crypto.randomUUID();
+// serveur
+async function payer(cle, cmd) {
+  if (vus.has(cle))
+    return vus.get(cle);
+  const p = debiter(cmd);
+  vus.set(cle, p);
+  return p;
+}
