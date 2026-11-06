@@ -1,0 +1,9 @@
+// attente avant l'essai n (ms)
+function attente(n, ra) {
+  const plafond = Math.min(
+    30_000, 1000 * 2 ** n);
+  const hasard =
+    Math.random() * plafond;
+  const min = delaiServeur(ra);
+  return (min ?? 0) + hasard;
+}
