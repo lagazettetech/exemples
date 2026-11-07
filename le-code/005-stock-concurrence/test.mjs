@@ -6,7 +6,8 @@
 //   4. 50 acheteurs en même temps sur 1 article : exactement 1 commande, stock 0 ;
 //   5. SELECT … FOR UPDATE : le 2e acheteur attend, lit 0 et refuse ;
 //   6. le niveau d'isolation par défaut est bien Read Committed ;
-//   7. l'extrait de la vidéo est identique à la requête testée (≤ 10 lignes, ≤ 32 caractères).
+//   7. paniers de 2 articles (requête atomique par article, ou FOR UPDATE … ORDER BY id) : 1 panier, pas d'interblocage ;
+//   8. l'extrait de la vidéo est identique à la requête testée (≤ 10 lignes, ≤ 32 caractères).
 // Lancer : npm install && npm test   (Node 18+ ; télécharge les binaires PostgreSQL via npm)
 import EmbeddedPostgres from 'embedded-postgres';
 import pg from 'pg';
@@ -14,7 +15,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import assert from 'node:assert/strict';
-import { SCHEMA, UPDATE_ATOMIQUE, commandeNaive, commander, commanderAvecVerrou } from './commande.js';
+import { SCHEMA, UPDATE_ATOMIQUE, commandeNaive, commander, commanderAvecVerrou, commanderPanier, commanderPanierAvecVerrou } from './commande.js';
 
 const dir = mkdtempSync(join(tmpdir(), 'lecode005-'));
 const port = 54000 + Math.floor(Math.random() * 1000);
@@ -97,6 +98,19 @@ try {
   assert.deepEqual(await etat(), { stock: 0, commandes: 1 });
   ok('SELECT … FOR UPDATE : le 2e acheteur attend, lit 0 et refuse (1 commande)');
   await ca.end(); await cb.end();
+
+  // 5 bis. Paniers de 2 articles (1 en stock chacun), 20 acheteurs, dont la moitié dans l'ordre inverse
+  for (const [nom, f] of [['UPDATE atomique par article', commanderPanier], ['SELECT … FOR UPDATE … ORDER BY id', commanderPanierAvecVerrou]]) {
+    await admin.query('TRUNCATE commandes'); await admin.query('DELETE FROM produits');
+    await admin.query("INSERT INTO produits VALUES (1, 'Console', 1), (2, 'Manette', 1)");
+    const cs = await Promise.all(Array.from({ length: 20 }, () => connexion()));
+    const rs = await Promise.all(cs.map((c, i) => f(c, i % 2 ? [2, 1] : [1, 2], 'panier' + i)));
+    await Promise.all(cs.map((c) => c.end()));
+    const stocks = (await admin.query('SELECT stock FROM produits ORDER BY id')).rows.map((r) => r.stock);
+    const nbCmd = Number((await admin.query('SELECT count(*) FROM commandes')).rows[0].count);
+    assert.equal(rs.filter((r) => r.ok).length, 1); assert.deepEqual(stocks, [0, 0]); assert.equal(nbCmd, 2);
+    ok(`panier de 2 articles, 20 acheteurs (ordres mélangés), ${nom} : 1 panier passe, stocks 0/0, aucun interblocage`);
+  }
 
   // 7. Extrait vidéo = requête testée
   const fichier = readFileSync(new URL('commande.sql', import.meta.url), 'utf8');

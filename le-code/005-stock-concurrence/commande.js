@@ -52,3 +52,37 @@ export async function commanderAvecVerrou(client, produitId, acheteur) {
     return { ok: true };
   } catch (e) { await client.query('ROLLBACK'); throw e; }
 }
+
+// 4. Un panier « tout ou rien » : la requête atomique suffit encore — une par article, dans une transaction,
+//    ROLLBACK si l'une renvoie 0 ligne. Les articles sont traités dans un ordre fixe (par id) : deux paniers qui
+//    contiennent les mêmes articles dans un ordre différent ne s'attendent pas l'un l'autre en boucle (interblocage).
+export async function commanderPanier(client, produitIds, acheteur) {
+  const ids = [...produitIds].sort((a, b) => a - b);
+  await client.query('BEGIN');
+  try {
+    for (const id of ids) {
+      const r = await client.query(UPDATE_ATOMIQUE, [id]);
+      if (r.rowCount === 0) { await client.query('ROLLBACK'); return { ok: false, raison: 'rupture', produit: id }; }
+    }
+    for (const id of ids) await client.query('INSERT INTO commandes (produit_id, acheteur) VALUES ($1, $2)', [id, acheteur]);
+    await client.query('COMMIT');
+    return { ok: true };
+  } catch (e) { await client.query('ROLLBACK'); throw e; }
+}
+
+// 5. Quand la règle ne tient pas dans un WHERE (une règle métier sur
+//    plusieurs lignes, un calcul), on lit avant de décider — ici la règle est simplifiée (« tout est en stock ») — : SELECT … FOR UPDATE verrouille les lignes lues, dans l'ordre des id.
+export async function commanderPanierAvecVerrou(client, produitIds, acheteur) {
+  const ids = [...produitIds].sort((a, b) => a - b);
+  await client.query('BEGIN');
+  try {
+    const lignes = (await client.query('SELECT id, stock FROM produits WHERE id = ANY($1) ORDER BY id FOR UPDATE', [ids])).rows;
+    if (lignes.length !== ids.length || lignes.some((l) => l.stock <= 0)) { await client.query('ROLLBACK'); return { ok: false, raison: 'rupture' }; }
+    for (const id of ids) {
+      await client.query('UPDATE produits SET stock = stock - 1 WHERE id = $1', [id]);
+      await client.query('INSERT INTO commandes (produit_id, acheteur) VALUES ($1, $2)', [id, acheteur]);
+    }
+    await client.query('COMMIT');
+    return { ok: true };
+  } catch (e) { await client.query('ROLLBACK'); throw e; }
+}
