@@ -1,0 +1,6 @@
+UPDATE produits
+SET stock = stock - 1
+WHERE id = $1
+  AND stock > 0;
+-- 1 ligne : commande OK
+-- 0 ligne : rupture de stock
