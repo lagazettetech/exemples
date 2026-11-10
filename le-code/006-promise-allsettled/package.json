@@ -1,0 +1,9 @@
+{
+  "name": "le-code-006-promise-allsettled",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Le Code #006 — Promise.all : une API tombe, toute la page tombe → Promise.allSettled (Node, aucune dépendance)",
+  "scripts": { "test": "node test.mjs" },
+  "license": "MIT"
+}

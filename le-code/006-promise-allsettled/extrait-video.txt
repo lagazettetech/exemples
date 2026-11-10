@@ -1,0 +1,8 @@
+const res = await Promise
+  .allSettled(appels);
+res.forEach((r, i) => {
+  if (r.status === "fulfilled")
+    afficher(i, r.value);
+  else
+    erreur(i, r.reason);
+});
