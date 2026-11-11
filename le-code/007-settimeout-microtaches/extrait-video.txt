@@ -1,0 +1,8 @@
+const pause = () => new Promise(
+  (r) => setTimeout(r, 0));
+
+for (const paquet of paquets) {
+  traiter(paquet);
+  barre.value += paquet.length;
+  await pause();
+}
