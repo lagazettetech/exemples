@@ -9,3 +9,4 @@ Un dossier par vidéo, code écrit et testé par nous (licence MIT). `npm instal
 - [005 — Deux clics, un seul article en stock : requête atomique, SELECT … FOR UPDATE (SQL, PostgreSQL)](le-code/005-stock-concurrence/)
 - [006 — Promise.all : une API tombe, toute la page tombe → Promise.allSettled (JavaScript)](le-code/006-promise-allsettled/)
 - [007 — Pourquoi ton setTimeout(0) passe après la Promise : microtâches, tâches et interface gelée (JavaScript)](le-code/007-settimeout-microtaches/)
+- [008 — Commande enregistrée, mail jamais parti : table outbox dans la même transaction + relais, consommateur idempotent (SQL, PostgreSQL)](le-code/008-outbox-transactionnel/)

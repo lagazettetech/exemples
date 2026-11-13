@@ -1,0 +1,15 @@
+{
+  "name": "le-code-008-outbox-transactionnel",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Le Code #008 — Commande enregistrée, mail jamais parti : double écriture → table outbox dans la même transaction + relais, consommateur idempotent (PostgreSQL réel via embedded-postgres)",
+  "scripts": {
+    "test": "node test.mjs"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "embedded-postgres": "^18.6.0-beta.19",
+    "pg": "^8.23.1"
+  }
+}
