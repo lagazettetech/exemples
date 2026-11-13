@@ -2,6 +2,8 @@
 // Une commande doit (1) être enregistrée en base et (2) publier l'événement « commande.creee » vers une file de
 // messages, que le service mail consomme. Ce sont DEUX écritures, dans deux systèmes : l'une peut réussir, l'autre non.
 
+// `db` = une connexion dédiée (pg.Client, ou `await pool.connect()`) : BEGIN … COMMIT doivent passer par la même connexion.
+
 // Une file de messages simulée (le « broker ») : elle peut tomber en panne.
 export class FileDeMessages {
   constructor() { this.recus = []; this.enPanne = false; }
@@ -44,6 +46,7 @@ export async function creerCommande(db, { id, mail }) {
 // Si la file est en panne, ROLLBACK : les lignes restent « à envoyer » et repartent au tour suivant.
 // Limite (assumée) : si le relais plante APRÈS avoir publié et AVANT d'avoir marqué la ligne, l'événement
 // sera publié une 2e fois au tour suivant → livraison « au moins une fois » → consommateur idempotent.
+// Idem si la file tombe au milieu d'un lot : les événements déjà publiés du lot sont remis « à envoyer » par le ROLLBACK.
 export async function relayer(db, file, { lot = 10, planteApresEnvoi = false } = {}) {
   await db.query('BEGIN');
   try {

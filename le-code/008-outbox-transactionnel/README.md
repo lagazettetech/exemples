@@ -24,7 +24,8 @@ COMMIT;
 
 **Le relais.** Un processus à part lit les lignes pas encore envoyées, les publie dans la file, puis les marque
 (`envoye_le`). File en panne : `ROLLBACK`, l'événement reste dans la table et repart au tour suivant (test 4).
-`FOR UPDATE SKIP LOCKED` permet de faire tourner plusieurs relais sans qu'ils prennent la même ligne (test 7).
+`FOR UPDATE SKIP LOCKED` permet de faire tourner plusieurs relais sans qu'ils prennent la même ligne (test 7) ; contrepartie :
+avec plusieurs relais, l'ordre de publication n'est plus garanti — si l'ordre compte, un seul relais (ou un ordre par commande).
 Autre façon de faire le relais : lire le journal des transactions (CDC, par exemple Debezium et son « Outbox Event
 Router ») au lieu d'interroger la table.
 
@@ -32,10 +33,14 @@ Router ») au lieu d'interroger la table.
 ligne, il republie l'événement au tour suivant (test 5). Le consommateur doit donc être **idempotent** : il note
 l'identifiant de chaque événement traité (clé primaire), dans la même transaction que son travail, et ignore un
 doublon (test 6). Si le service mail appelle un fournisseur externe, passe aussi l'identifiant de l'événement comme
-clé d'idempotence de l'API (voir l'exemple 003).
+clé d'idempotence de l'API (voir l'exemple 003). Sans une telle clé, l'envoi d'un mail (SMTP) et
+l'écriture de l'identifiant ne tiennent pas dans une même transaction : une petite fenêtre de doublon reste (le
+service peut planter entre les deux). Ici, `mails_envoyes` est écrit dans la même transaction que l'identifiant.
 
-Autres limites : la table `outbox` grossit (purge les lignes envoyées), et le relais ajoute un délai (l'intervalle
-d'interrogation). Si tout reste dans une seule base (pas de file de messages), une transaction suffit : pas besoin de ce pattern.
+Autres limites : la table `outbox` grossit (purge les lignes envoyées), le relais ajoute un délai (l'intervalle
+d'interrogation), et notre relais garde sa transaction ouverte pendant l'envoi (simple pour la démo ; en production, garde des
+lots petits ou marque les lignes « en cours » avant d'envoyer). Les fonctions attendent une connexion dédiée
+(`pg.Client` ou `await pool.connect()`), jamais un `pg.Pool` directement : BEGIN et COMMIT doivent passer par la même connexion. Si tout reste dans une seule base (pas de file de messages), une transaction suffit : pas besoin de ce pattern.
 
 ```
 npm install && npm test   # Node 18+ ; PostgreSQL réel via embedded-postgres (binaires téléchargés par npm)
@@ -46,6 +51,7 @@ Fichiers : `schema.sql` (tables), `outbox.js` (les deux versions naïves, la tra
 
 Sources : Chris Richardson, microservices.io, « Pattern: Transactional outbox » et « Pattern: Idempotent Consumer » ·
 documentation PostgreSQL 18, « 3.4. Transactions » et « SELECT » (clause de verrouillage, `SKIP LOCKED`) ·
-documentation Debezium, « Outbox Event Router » (consultées le 13/11/2026).
+documentation Debezium, « Outbox Event Router » · AWS Prescriptive Guidance, « Transactional outbox pattern »
+(consultées le 13/11/2026).
 
 Licence MIT — La Gazette Tech.
