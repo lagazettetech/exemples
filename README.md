@@ -10,3 +10,4 @@ Un dossier par vidéo, code écrit et testé par nous (licence MIT). `npm instal
 - [006 — Promise.all : une API tombe, toute la page tombe → Promise.allSettled (JavaScript)](le-code/006-promise-allsettled/)
 - [007 — Pourquoi ton setTimeout(0) passe après la Promise : microtâches, tâches et interface gelée (JavaScript)](le-code/007-settimeout-microtaches/)
 - [008 — Commande enregistrée, mail jamais parti : table outbox dans la même transaction + relais, consommateur idempotent (SQL, PostgreSQL)](le-code/008-outbox-transactionnel/)
+- [009 — Le like s'affiche avant la réponse du serveur : UI optimiste, numéro de clic et relecture du serveur (JavaScript)](le-code/009-ui-optimiste/)
