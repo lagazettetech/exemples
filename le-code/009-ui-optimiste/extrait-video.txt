@@ -1,0 +1,9 @@
+const n = ++p.clics;
+p.aime = oui; maj(p);
+try {
+  await envoyer(p.id, oui);
+} catch {
+  const v = await lire(p.id);
+  if (n !== p.clics) return;
+  p.aime = v; maj(p);
+}
