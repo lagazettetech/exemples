@@ -11,3 +11,4 @@ Un dossier par vidéo, code écrit et testé par nous (licence MIT). `npm instal
 - [007 — Pourquoi ton setTimeout(0) passe après la Promise : microtâches, tâches et interface gelée (JavaScript)](le-code/007-settimeout-microtaches/)
 - [008 — Commande enregistrée, mail jamais parti : table outbox dans la même transaction + relais, consommateur idempotent (SQL, PostgreSQL)](le-code/008-outbox-transactionnel/)
 - [009 — Le like s'affiche avant la réponse du serveur : UI optimiste, numéro de clic et relecture du serveur (JavaScript)](le-code/009-ui-optimiste/)
+- [010 — 1 page, 101 requêtes : le problème N+1 → une requête groupée (WHERE id = ANY) ou une jointure (JavaScript, PostgreSQL)](le-code/010-n-plus-un/)

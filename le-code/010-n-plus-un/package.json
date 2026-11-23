@@ -1,0 +1,15 @@
+{
+  "name": "le-code-010-n-plus-un",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Le Code #010 — 1 page, 101 requêtes : le problème N+1 → une requête groupée (WHERE id = ANY($1)) ou une jointure (PostgreSQL réel via embedded-postgres)",
+  "scripts": {
+    "test": "node test.mjs"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "embedded-postgres": "^18.6.0-beta.19",
+    "pg": "^8.23.1"
+  }
+}
