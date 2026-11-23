@@ -1,0 +1,10 @@
+const ids = [...new Set(cmds
+  .map((c) => c.client_id))];
+const res = await db.query(`
+  SELECT id, nom FROM clients
+  WHERE id = ANY($1)`, [ids]);
+const noms = new Map(res.rows
+  .map((r) => [r.id, r.nom]));
+return cmds.map((c) => ({ ...c,
+  nom: noms.get(c.client_id),
+}));
